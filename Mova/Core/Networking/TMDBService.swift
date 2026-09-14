@@ -38,10 +38,95 @@ class TMDBService {
         }
     }
 
-    private func fetch(path: String) async throws -> MovieResponse {
+    private func execute(_ components: URLComponents) async throws -> [Movie] {
+        guard let url = components.url else {
+            throw TMDBError.invalidURL
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw TMDBError.requestFailed("Server xətası.")
+        }
+
+        return try JSONDecoder().decode(MovieResponse.self, from: data).results
+    }
+
+    private func fetch(path: String) async throws -> [Movie] {
         let key = try apiKey
 
         guard var components = URLComponents(string: baseURL + path) else {
+            throw TMDBError.invalidURL
+        }
+        components.queryItems = [
+            URLQueryItem(name: "api_key", value: key),
+            URLQueryItem(name: "language", value: "en-US")
+        ]
+
+        return try await execute(components)
+    }
+
+    func fetchTrendingToday() async throws -> [Movie] {
+        try await fetch(path: "/trending/movie/day")
+    }
+
+    func fetchTrendingThisWeek() async throws -> [Movie] {
+        try await fetch(path: "/trending/movie/week")
+    }
+
+    func fetchNowPlaying() async throws -> [Movie] {
+        try await fetch(path: "/movie/now_playing")
+    }
+
+    func searchMovies(query: String) async throws -> [Movie] {
+        let key = try apiKey
+
+        guard var components = URLComponents(string: baseURL + "/search/movie") else {
+            throw TMDBError.invalidURL
+        }
+        components.queryItems = [
+            URLQueryItem(name: "api_key", value: key),
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "query", value: query)
+        ]
+
+        return try await execute(components)
+    }
+
+    func discoverMovies(genreID: Int?, year: Int?, sortBy: String) async throws -> [Movie] {
+        let key = try apiKey
+
+        guard var components = URLComponents(string: baseURL + "/discover/movie") else {
+            throw TMDBError.invalidURL
+        }
+
+        var queryItems = [
+            URLQueryItem(name: "api_key", value: key),
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "sort_by", value: sortBy)
+        ]
+
+        if let genreID {
+            queryItems.append(URLQueryItem(name: "with_genres", value: String(genreID)))
+        }
+        if let year {
+            queryItems.append(URLQueryItem(name: "primary_release_year", value: String(year)))
+        }
+
+        components.queryItems = queryItems
+
+        return try await execute(components)
+    }
+    
+    private struct MovieDetailResponse: Codable {
+        let runtime: Int?
+    }
+
+    func fetchMovieRuntime(id: Int) async throws -> Int? {
+        let key = try apiKey
+
+        guard var components = URLComponents(string: baseURL + "/movie/\(id)") else {
             throw TMDBError.invalidURL
         }
         components.queryItems = [
@@ -60,21 +145,6 @@ class TMDBService {
             throw TMDBError.requestFailed("Server xətası.")
         }
 
-        return try JSONDecoder().decode(MovieResponse.self, from: data)
-    }
-
-    // Home ekranindaki banner ucun (en trend olan filmler)
-    func fetchTrendingToday() async throws -> [Movie] {
-        try await fetch(path: "/trending/movie/day").results
-    }
-
-    // "Top 10 Movies This Week"
-    func fetchTrendingThisWeek() async throws -> [Movie] {
-        try await fetch(path: "/trending/movie/week").results
-    }
-
-    // "New Releases"
-    func fetchNowPlaying() async throws -> [Movie] {
-        try await fetch(path: "/movie/now_playing").results
+        return try JSONDecoder().decode(MovieDetailResponse.self, from: data).runtime
     }
 }

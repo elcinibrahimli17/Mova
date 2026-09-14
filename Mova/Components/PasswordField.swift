@@ -29,8 +29,6 @@ struct PasswordField: View {
                     .foregroundColor(.gray)
             }
         }
-        .padding(16)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .authFieldStyle()
     }
 }

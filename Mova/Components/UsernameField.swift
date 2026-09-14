@@ -18,8 +18,6 @@ struct UsernameField: View {
             TextField("Usernamed", text: $text)
                 .autocapitalization(.none)
         }
-        .padding(16)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .authFieldStyle()
     }
 }

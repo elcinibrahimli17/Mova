@@ -102,10 +102,7 @@ struct ProfileView: View {
                 .foregroundColor(.red)
         }
         .padding(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.red, lineWidth: 1.5)
-        )
+        .borderedCard(cornerRadius: 16, borderColor: .red, lineWidth: 1.5)
     }
 
     private var menuList: some View {

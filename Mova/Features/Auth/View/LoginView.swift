@@ -46,8 +46,7 @@ struct LoginView: View {
             Spacer()
             footer
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
+        .authScreenBackground()
     }
     
     private var header: some View {
@@ -55,8 +54,7 @@ struct LoginView: View {
             AuthLogo()
             
             Text("Login to Your Account")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.black)
+                .authTitleStyle()
         }
     }
     
@@ -67,9 +65,7 @@ struct LoginView: View {
             
             if let errorMessage = authViewModel.errorMessage {
                 Text(errorMessage)
-                    .font(.system(size: 13))
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
+                    .errorTextStyle()
             }
         }
         .padding(.horizontal, 24)

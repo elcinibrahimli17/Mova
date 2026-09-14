@@ -19,8 +19,6 @@ struct EmailField: View {
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
         }
-        .padding(16)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .authFieldStyle()
     }
 }

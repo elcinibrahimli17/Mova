@@ -10,6 +10,8 @@ import SwiftUI
 
 struct MoviePosterCard: View {
     let movie: Movie
+    var width: CGFloat = 140
+    var height: CGFloat = 200
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -23,7 +25,7 @@ struct MoviePosterCard: View {
                     Color.gray.opacity(0.15)
                 }
             }
-            .frame(width: 140, height: 200)
+            .frame(width: width, height: height)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
             Text(String(format: "%.1f", movie.voteAverage))

@@ -10,6 +10,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @ObservedObject var authViewModel: AuthViewModel
+    @StateObject private var myListManager = MyListManager()
+    @StateObject private var downloadManager = DownloadManager()
 
     var body: some View {
         TabView {
@@ -18,20 +20,20 @@ struct MainTabView: View {
                     Label("Home", systemImage: "house.fill")
                 }
 
-            Text("Explore")
+            ExploreView()
                 .tabItem {
                     Label("Explore", systemImage: "safari")
                 }
 
-            Text("My List")
+            MyListView()
                 .tabItem {
                     Label("My List", systemImage: "bookmark")
                 }
 
-            Text("Download")
-                .tabItem {
-                    Label("Download", systemImage: "arrow.down.circle")
-                }
+            DownloadView()
+                            .tabItem {
+                                Label("Download", systemImage: "arrow.down.circle")
+                            }
 
             ProfileView(authViewModel: authViewModel)
                 .tabItem {
@@ -39,6 +41,8 @@ struct MainTabView: View {
                 }
         }
         .tint(.red)
+                .environmentObject(myListManager)
+                .environmentObject(downloadManager)
     }
 }
 

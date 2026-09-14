@@ -32,10 +32,7 @@ struct SocialLoginButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-            )
+            .borderedCard(cornerRadius: 14, borderColor: Color.gray.opacity(0.25))
         }
     }
 }

@@ -49,8 +49,7 @@ struct LetsYouInView: View {
                 AuthFooterLink(question: "Don't have an account?", actionText: "Sign up")
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
+        .authScreenBackground()
     }
 }
 

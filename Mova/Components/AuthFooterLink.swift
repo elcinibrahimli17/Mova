@@ -11,7 +11,7 @@ struct AuthFooterLink: View {
     let question: String
     let actionText: String
 
-    var body: some View {
+    var body: some View  {
         HStack(spacing: 4) {
             Text(question)
                 .foregroundColor(.gray)

@@ -43,8 +43,7 @@ struct SignUpView: View {
             Spacer()
             footer
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
+        .authScreenBackground()
     }
 
     private var header: some View {
@@ -52,8 +51,7 @@ struct SignUpView: View {
             AuthLogo()
 
             Text("Create Your Account")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.black)
+                .authTitleStyle()
         }
     }
 
@@ -65,9 +63,7 @@ struct SignUpView: View {
 
             if let errorMessage = authViewModel.errorMessage {
                 Text(errorMessage)
-                    .font(.system(size: 13))
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
+                    .errorTextStyle()
             }
         }
         .padding(.horizontal, 24)

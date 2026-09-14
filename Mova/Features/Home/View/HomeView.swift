@@ -5,7 +5,6 @@
 //  Created by Elchın on 07.09.26.
 //
 
-
 import SwiftUI
 
 struct HomeView: View {
@@ -13,18 +12,21 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
 
     var body: some View {
-        ScrollView {
-            content
-        }
-        .background(Color.white)
-        .overlay { loadingIndicator }
-        .task {
-            await viewModel.fetchHomeData()
-        }
-        .alert("Xəta", isPresented: .constant(viewModel.errorMessage != nil)) {
-            errorAlertActions
-        } message: {
-            Text(viewModel.errorMessage ?? "")
+        NavigationStack {
+            ScrollView {
+                content
+            }
+            .background(Color.white)
+            .overlay { loadingIndicator }
+            .toolbar(.hidden, for: .navigationBar)
+            .task {
+                await viewModel.fetchHomeData()
+            }
+            .alert("Xəta", isPresented: .constant(viewModel.errorMessage != nil)) {
+                errorAlertActions
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
         }
     }
 
@@ -34,7 +36,7 @@ struct HomeView: View {
                 FeaturedMovieBanner(movie: featured)
             }
 
-            movieSection(title: "Top 10 Movies This Week", movies: viewModel.topMoviesThisWeek)
+            movieSection(title: "Top Movies This Week", movies: viewModel.topMoviesThisWeek)
             movieSection(title: "New Releases", movies: viewModel.newReleases)
         }
         .padding(.bottom, 24)
@@ -56,18 +58,24 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(title)
-                    .font(.system(size: 18, weight: .bold))
+                    .sectionTitleStyle()
                 Spacer()
-                Button("See all") {}
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.red)
+
+                NavigationLink(destination: MovieListView(title: title, movies: movies)) {
+                    Text("See all")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.red)
+                }
             }
             .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(movies) { movie in
-                        MoviePosterCard(movie: movie)
+                        NavigationLink(destination: MovieDetailView(movie: movie)) {
+                            MoviePosterCard(movie: movie)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 20)
