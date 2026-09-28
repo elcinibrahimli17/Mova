@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import SwiftData
 
 class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
@@ -23,5 +24,6 @@ struct MovaApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: [SavedMovie.self, DownloadedMovieModel.self])
     }
 }

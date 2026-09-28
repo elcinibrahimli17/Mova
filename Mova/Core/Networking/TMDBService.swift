@@ -94,7 +94,7 @@ class TMDBService {
         return try await execute(components)
     }
 
-    func discoverMovies(genreID: Int?, year: Int?, sortBy: String) async throws -> [Movie] {
+    func discoverMovies(genreID: Int?, year: Int?, sortBy: String, page: Int = 1) async throws -> [Movie] {
         let key = try apiKey
 
         guard var components = URLComponents(string: baseURL + "/discover/movie") else {
@@ -104,7 +104,8 @@ class TMDBService {
         var queryItems = [
             URLQueryItem(name: "api_key", value: key),
             URLQueryItem(name: "language", value: "en-US"),
-            URLQueryItem(name: "sort_by", value: sortBy)
+            URLQueryItem(name: "sort_by", value: sortBy),
+            URLQueryItem(name: "page", value: String(page))
         ]
 
         if let genreID {
@@ -115,7 +116,6 @@ class TMDBService {
         }
 
         components.queryItems = queryItems
-
         return try await execute(components)
     }
     
@@ -146,5 +146,59 @@ class TMDBService {
         }
 
         return try JSONDecoder().decode(MovieDetailResponse.self, from: data).runtime
+    }
+    
+    func fetchCredits(movieID: Int) async throws -> CreditsResponse {
+        let key = try apiKey
+
+        guard var components = URLComponents(string: baseURL + "/movie/\(movieID)/credits") else {
+            throw TMDBError.invalidURL
+        }
+        components.queryItems = [
+            URLQueryItem(name: "api_key", value: key),
+            URLQueryItem(name: "language", value: "en-US")
+        ]
+
+        guard let url = components.url else {
+            throw TMDBError.invalidURL
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw TMDBError.requestFailed("Server xətası.")
+        }
+
+        return try JSONDecoder().decode(CreditsResponse.self, from: data)
+    }
+    
+    func fetchVideos(movieID: Int) async throws -> [MovieVideo] {
+        let key = try apiKey
+
+        guard var components = URLComponents(string: baseURL + "/movie/\(movieID)/videos") else {
+            throw TMDBError.invalidURL
+        }
+        components.queryItems = [
+            URLQueryItem(name: "api_key", value: key),
+            URLQueryItem(name: "language", value: "en-US")
+        ]
+
+        guard let url = components.url else {
+            throw TMDBError.invalidURL
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw TMDBError.requestFailed("Server xətası.")
+        }
+
+        return try JSONDecoder().decode(MovieVideoResponse.self, from: data).results
+    }
+
+    func fetchRecommendations(movieID: Int) async throws -> [Movie] {
+        try await fetch(path: "/movie/\(movieID)/recommendations")
     }
 }

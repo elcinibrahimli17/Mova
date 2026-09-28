@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MoviePosterGrid: View {
     let movies: [Movie]
+    var onReachEnd: (() -> Void)? = nil
 
     private let horizontalPadding: CGFloat = 20
     private let columnSpacing: CGFloat = 16
@@ -33,6 +34,11 @@ struct MoviePosterGrid: View {
                         MoviePosterCard(movie: movie, width: cardWidth, height: cardHeight)
                     }
                     .buttonStyle(.plain)
+                    .onAppear {
+                        if movie.id == movies.last?.id {
+                            onReachEnd?()
+                        }
+                    }
                 }
             }
             .padding(.horizontal, horizontalPadding)

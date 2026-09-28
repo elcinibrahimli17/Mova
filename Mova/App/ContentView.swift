@@ -5,89 +5,62 @@
 //  Created by Elchın on 04.09.26.
 //
 
-
 import SwiftUI
-
-enum AppScreen {
-    case splash
-    case onboarding
-    case letsYouIn
-    case signUp
-    case login
-    case home
-}
 
 struct ContentView: View {
     @StateObject private var authViewModel = AuthViewModel()
-    @State private var currentScreen: AppScreen = .splash
-
+    @StateObject private var appState = AppStateController()
+    @AppStorage("appLanguage") private var appLanguageRaw: String = AppLanguage.english.rawValue
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    
     var body: some View {
-        Group {
-            switch currentScreen {
-            case .splash:
-                SplashView()
-
-            case .onboarding:
-                OnboardingView {
-                    currentScreen = .letsYouIn
-                }
-
-            case .letsYouIn:
-                LetsYouInView(
-                    onBack: { currentScreen = .onboarding },
-                    onSignInWithPassword: { currentScreen = .login },
-                    onSignUp: { currentScreen = .signUp }
-                )
-
-            case .signUp:
-                SignUpView(
-                    authViewModel: authViewModel,
-                    onBack: { currentScreen = .letsYouIn },
-                    onSignUpSuccess: { currentScreen = .home },
-                    onSignIn: { currentScreen = .login }
-                )
-
-            case .login:
-                LoginView(
-                    authViewModel: authViewModel,
-                    onBack: { currentScreen = .letsYouIn },
-                    onSignInSuccess: { currentScreen = .home },
-                    onForgotPassword: {},
-                    onSignUp: { currentScreen = .signUp }
-                )
-
-            case .home:
-                MainTabView(authViewModel: authViewModel)
+        contentView
+            .environment(\.locale, AppLanguage(rawValue: appLanguageRaw)?.locale ?? Locale(identifier: "en"))
+            .environmentObject(authViewModel)
+            .environmentObject(appState)
+            .onAppear {
+                checkSessionAndNavigate()
             }
-        }
-        .onAppear {
-            checkSessionAndNavigate()
-        }
-        .onChange(of: authViewModel.userSession == nil) { _, isLoggedOut in
-            if isLoggedOut && currentScreen == .home {
-                withAnimation {
-                    currentScreen = .login
+            .onChange(of: authViewModel.userSession == nil) {
+                _, isLoggedOut in
+                if isLoggedOut && appState.root == .tabbar {
+                    appState.root = .auth
                 }
             }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        switch appState.root {
+        case .launch:
+            SplashView()
+            
+        case .onBoarding:
+            OnboardingView()
+            
+        case .auth:
+            AuthFlowView()
+            
+        case .tabbar:
+            MainTabView()
         }
     }
-
+    
     private func checkSessionAndNavigate() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            if authViewModel.isLoggedIn {
+            if !hasSeenOnboarding {
+                appState.root = .onBoarding
+            } else if authViewModel.isLoggedIn {
                 Task {
                     await authViewModel.fetchUser()
-                    withAnimation {
-                        currentScreen = .home
-                    }
+                    appState.root = .tabbar
                 }
             } else {
-                withAnimation {
-                    currentScreen = .onboarding
-                }
+                appState.root = .auth
             }
         }
     }
+    
 }
 
 #Preview {
